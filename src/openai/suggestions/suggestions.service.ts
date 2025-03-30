@@ -3,20 +3,28 @@ import { OpenAI } from 'openai';
 import { getSchema } from 'src/utils/getSchemas';
 import { ISchema } from 'src/types/schemas';
 import { ConfigService } from '@nestjs/config';
+import { SuggestionsResponseDto } from './suggestions.dto';
+import { validate } from 'class-validator';
+import { LoggerService } from 'src/logger/logger.service';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class SuggestionsService {
   private openai: OpenAI;
   private suggestionsSchema: ISchema;
 
-  constructor(private ConfigService: ConfigService) {
+  constructor(
+    private ConfigService: ConfigService,
+    private logger: LoggerService,
+  ) {
     this.openai = new OpenAI({
       apiKey: this.ConfigService.get<string>('OPENAI_API_KEY'),
     });
     this.suggestionsSchema = getSchema('suggestions');
   }
 
-  async generateSuggestions(query: string): Promise<any> {
+  async generateSuggestions(query: string): Promise<SuggestionsResponseDto> {
+    this.logger.info('Getting Suggestions from OpenAI');
     try {
       const response = await this.openai.responses.create({
         model: 'gpt-4o',
@@ -47,7 +55,22 @@ export class SuggestionsService {
         throw new Error('Failed to generate suggestions');
       }
 
-      return response;
+      this.logger.info(`Response from OpenAI: ${response.output_text}`);
+
+      const suggestionsResponse = JSON.parse(
+        response.output_text,
+      ) as SuggestionsResponseDto;
+      const dtoInstance = plainToInstance(
+        SuggestionsResponseDto,
+        suggestionsResponse.suggestions,
+      );
+      const validationErrors = await validate(dtoInstance);
+
+      if (validationErrors.length > 0) {
+        throw new Error('Failed to validate response');
+      }
+
+      return suggestionsResponse;
     } catch (error: any) {
       if (error instanceof Error) {
         console.error('Error generating suggestions:', error.message);
