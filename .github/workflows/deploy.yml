@@ -1,0 +1,11 @@
+name: Deploy Bass Impulse to production
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    uses: vanm30-portfolio/actions/.github/workflows/deploy.yml@v0.1.0
+    secrets: inherit
