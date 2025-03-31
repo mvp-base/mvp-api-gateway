@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { OpenAI } from 'openai';
 import { getSchema } from 'src/utils/getSchemas';
 import { ISchema } from 'src/types/schemas';
-import { ConfigService } from '@nestjs/config';
 import { SuggestionsResponseDto } from './suggestions.dto';
 import { validate } from 'class-validator';
 import { LoggerService } from 'src/logger/logger.service';
@@ -13,12 +12,9 @@ export class SuggestionsService {
   private openai: OpenAI;
   private suggestionsSchema: ISchema;
 
-  constructor(
-    private ConfigService: ConfigService,
-    private logger: LoggerService,
-  ) {
+  constructor(private logger: LoggerService) {
     this.openai = new OpenAI({
-      apiKey: this.ConfigService.get<string>('OPENAI_API_KEY'),
+      apiKey: process.env.OPENAI_API_KEY,
     });
     this.suggestionsSchema = getSchema('suggestions');
   }
