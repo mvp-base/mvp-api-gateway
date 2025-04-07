@@ -14,7 +14,11 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
-  const allowedOrigins = [/\.matejv\.com$/, 'https://matejv.com']; // Allow matejv.com & all subdomains
+  const allowedOrigins = [
+    /\.matejv\.com$/,
+    'https://matejv.com',
+    /^http:\/\/localhost(:\d+)?$/,
+  ];
 
   app.enableCors({
     origin: (origin, callback) => {

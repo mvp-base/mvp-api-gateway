@@ -9,10 +9,12 @@ import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class SuggestionsService {
-  private openai: OpenAI;
+  private readonly logger: LoggerService;
+  private readonly openai: OpenAI;
   private suggestionsSchema: ISchema;
 
-  constructor(private logger: LoggerService) {
+  constructor() {
+    this.logger = new LoggerService();
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -42,37 +44,35 @@ export class SuggestionsService {
             type: 'json_schema',
             name: 'suggestions',
             schema: this.suggestionsSchema,
-            strict: false,
+            strict: true,
           },
         },
       });
 
-      if (!response || !response.output_text) {
-        throw new Error('Failed to generate suggestions');
+      if (!response?.output_text) {
+        this.logger.error('Response from OpenAI is empty');
+        throw new Error('Response from OpenAI is empty');
       }
 
-      this.logger.info(`Response from OpenAI: ${response.output_text}`);
+      const parsed = JSON.parse(response.output_text) as SuggestionsResponseDto;
 
-      const suggestionsResponse = JSON.parse(
-        response.output_text,
-      ) as SuggestionsResponseDto;
-      const dtoInstance = plainToInstance(
-        SuggestionsResponseDto,
-        suggestionsResponse.suggestions,
-      );
+      const dtoInstance = plainToInstance(SuggestionsResponseDto, parsed);
       const validationErrors = await validate(dtoInstance);
 
       if (validationErrors.length > 0) {
+        this.logger.error(
+          `Validation errors: ${JSON.stringify(validationErrors)}`,
+        );
         throw new Error('Failed to validate response');
       }
 
-      return suggestionsResponse;
+      return dtoInstance;
     } catch (error: any) {
       if (error instanceof Error) {
-        console.error('Error generating suggestions:', error.message);
+        this.logger.error(`Error generating suggestions: ${error.message}`);
         throw new Error('Failed to generate suggestions: ' + error.message);
       } else {
-        console.error('Error generating suggestions:', error);
+        this.logger.error(`Unknown error: ${JSON.stringify(error)}`);
         throw new Error('Failed to generate suggestions');
       }
     }

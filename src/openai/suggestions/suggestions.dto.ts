@@ -113,6 +113,7 @@ export class SuggestionsRequestDto {
   @IsIn(['REQUEST_GENERATE_SUGGESTION'])
   type: 'REQUEST_GENERATE_SUGGESTION';
 
+  @IsNotEmpty()
   @IsString()
   query: string;
 }

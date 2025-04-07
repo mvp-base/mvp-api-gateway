@@ -4,6 +4,7 @@ import {
   ValidationPipe,
   UsePipes,
   Body,
+  Req,
 } from '@nestjs/common';
 import { SuggestionsService } from './suggestions.service';
 import {
@@ -23,15 +24,17 @@ export class SuggestionsController {
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async getSuggestions(
     @Body() body: SuggestionsRequestDto,
+    @Req() req: Request,
   ): Promise<SuggestionsResponseDto> {
-    this.logger.info('New POST request to /suggestions');
-    this.logger.info(`Request body: ${JSON.stringify(body)}`);
+    this.logger.info(
+      `Incoming request to /suggestions: method=${req.method}, url=${req.url}, headers=${JSON.stringify(req.headers)}, body=${JSON.stringify(body)}`,
+    );
 
     const response = await this.suggestionsService.generateSuggestions(
       body.query,
     );
 
-    this.logger.info(`Response: ${JSON.stringify(response)}`);
+    this.logger.info(`Outgoing Response: body=${JSON.stringify(response)}`);
 
     return response;
   }
