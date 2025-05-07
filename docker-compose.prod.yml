@@ -1,0 +1,13 @@
+services:
+  mvp-api-gateway:
+    image: matejv30/mvp-api-gateway:${TAG_NAME}
+    container_name: mvp-api-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - mvp-nw-prod
+
+networks:
+  mvp-nw-dev:
+    external: true

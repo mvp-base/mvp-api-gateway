@@ -7,5 +7,5 @@ on:
 
 jobs:
   deploy:
-    uses: vanm30-portfolio/actions/.github/workflows/deploy-prod.yml@deploy-2.0
+    uses: mvp-base/actions/.github/workflows/deploy-prod.yml@v1.1.0
     secrets: inherit
