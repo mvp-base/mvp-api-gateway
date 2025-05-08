@@ -6,8 +6,8 @@ services:
     env_file:
       - .env
     networks:
-      - mvp-nw-prod
+      - mvp-nw
 
 networks:
-  mvp-nw-dev:
+  mvp-nw:
     external: true
