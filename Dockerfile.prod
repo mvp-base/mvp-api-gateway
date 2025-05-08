@@ -21,6 +21,9 @@ RUN npm ci --only=production --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
 
+# TEMP FIX: Also copy original src/schemas for broken path usage
+COPY --from=builder /app/src/schemas ./src/schemas
+
 EXPOSE 8000
 
 CMD ["node", "dist/main"]
